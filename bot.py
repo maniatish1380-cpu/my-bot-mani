@@ -1,5 +1,5 @@
 import telebot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 import json
 import os
 from datetime import datetime
@@ -8,6 +8,7 @@ TOKEN = '8873507987:AAGgl-3ieIbEnYWblGAnjHxerKii5kxs_E0'
 bot = telebot.TeleBot(TOKEN)
 
 DATA_FILE = 'users.json'
+CHANNEL_USERNAME = '@cod_manii_yt'  # آیدی کانال شما برای جوین اجباری
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -18,6 +19,23 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f)
+
+# تابع بررسی عضویت کاربر در کانال
+def check_membership(user_id):
+    try:
+        member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
+        if member.status in ['member', 'administrator', 'creator']:
+            return True
+    except Exception:
+        pass
+    return False
+
+# دکمه‌های عضویت در کانال (شیشه ای)
+def not_joined_markup():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📢 عضويت در کانال تلگرام", url=f"https://t.me/cod_manii_yt"))
+    markup.add(InlineKeyboardButton("🔄 بررسی عضویت", callback_data="check_join"))
+    return markup
 
 def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
@@ -34,6 +52,16 @@ def main_menu():
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = str(message.from_user.id)
+    
+    # اول چک می‌کنیم عضو کانال هست یا نه
+    if not check_membership(message.from_user.id):
+        bot.send_message(
+            message.chat.id, 
+            "⚠️ برای استفاده از ربات، ابتدا باید در کانال ما عضو شوید!\n\nپس از عضویت، روی دکمه‌ی «بررسی عضویت» بزنید:", 
+            reply_markup=not_joined_markup()
+        )
+        return
+
     args = message.text.split()
     data = load_data()
     
@@ -47,9 +75,30 @@ def start(message):
         
     bot.send_message(message.chat.id, "سلام! به ربات خوش آمدید:", reply_markup=main_menu())
 
+# هندلر برای دکمه شیشه ای بررسی عضویت
+@bot.callback_query_handler(func=lambda call: call.data == "check_join")
+def callback_check_join(call):
+    user_id = call.from_user.id
+    if check_membership(user_id):
+        bot.answer_callback_query(call.id, "✅ تایید شد! حالا می‌تونید از ربات استفاده کنید.")
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+        bot.send_message(call.message.chat.id, "سلام! به ربات خوش آمدید:", reply_markup=main_menu())
+    else:
+        bot.answer_callback_query(call.id, "❌ شما هنوز در کانال عضو نشده‌اید!", show_alert=True)
+
 @bot.message_handler(func=lambda message: True)
 def handle(message):
     user_id = str(message.from_user.id)
+    
+    # چک کردن جوین اجباری برای تمام پیام‌ها و دکمه‌ها
+    if not check_membership(message.from_user.id):
+        bot.send_message(
+            message.chat.id, 
+            "⚠️ برای استفاده از ربات، ابتدا باید در کانال ما عضو شوید!", 
+            reply_markup=not_joined_markup()
+        )
+        return
+
     data = load_data()
     today = datetime.now().strftime("%Y-%m-%d")
 
@@ -98,6 +147,5 @@ def handle(message):
     elif message.text == "📸 پیج اینستاگرام":
         bot.send_message(message.chat.id, "📸 پیج اینستاگرام ما:\nhttps://www.instagram.com/maniiii.yt?igsh=ZWp6ZHdhMjloY2Jh")
 
-print("Bot with Mythic account is running...")
+print("Bot with Mythic account and Forced Join is running...")
 bot.infinity_polling()
-

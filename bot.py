@@ -159,4 +159,3 @@ def handle(message):
 
 print("Bot with Mythic account and Forced Join is running...")
 bot.infinity_polling()
-

@@ -1,4 +1,4 @@
-import telebot
+Import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 import json
 import os
@@ -42,6 +42,7 @@ def main_menu():
     markup.add(
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
         KeyboardButton("🎁 اکانت ۱۵ میتیک رایگان 🎁"),
+        KeyboardButton("🎁 پست سایرن رایگان"),
         KeyboardButton("📊 لینک دعوت (رفرال)"),
         KeyboardButton("🌐 DNS اختصاصی رایگان"),
         KeyboardButton("📢 کانال تلگرام"),
@@ -109,14 +110,7 @@ def handle(message):
         if data[user_id].get('last_daily') == today:
             bot.send_message(message.chat.id, "❌ شما امروز اکانت روزانه را دریافت کردید. فردا دوباره تلاش کنید.")
         else:
-            msg = (
-                "✨️اکانت جدید✨️\n"
-                "pabloandes55@gmail.com\n"
-                "pabloloja55\n"
-                ".\n"
-                "fenixfac@gmail.com\n"
-                "fenixfarms1"
-            )
+            msg = "🎁 این هم اکانت روزانه شما:\n\nsajad.calaf031@gmail.com\nSAJAD1401"
             bot.send_message(message.chat.id, msg)
             data[user_id]['last_daily'] = today
             save_data(data)
@@ -139,6 +133,15 @@ def handle(message):
             )
             bot.send_message(message.chat.id, ref_msg)
 
+    elif message.text == "🎁 پست سایرن رایگان":
+        siren_msg = (
+            "🎁 اطلاعات اکانت پست سایرن رایگان شما:\n\n"
+            "📧 ایمیل: Giselhrndz@gmail.com\n"
+            "🔑 پسورد: Liam180420\n\n"
+            "⚠️ لطفاً پس از ورود اطلاعات را تغییر دهید."
+        )
+        bot.send_message(message.chat.id, siren_msg)
+
     elif message.text == "📊 لینک دعوت (رفرال)":
         current_invites = data[user_id].get('invites', 0)
         ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
@@ -156,3 +159,4 @@ def handle(message):
 
 print("Bot with Mythic account and Forced Join is running...")
 bot.infinity_polling()
+

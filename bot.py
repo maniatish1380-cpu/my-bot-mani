@@ -42,7 +42,7 @@ def main_menu(user_id):
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
         KeyboardButton("🎁 اکانت ۲۱ میتیک رایگان 🎁"),
         KeyboardButton("🎁 پست سایرن رایگان"),
-        KeyboardButton("🎁 اکانت ۸۰ میلیونی رایگان🎁"),
+        KeyboardButton("🎁  پست اکانت ۸۰ میلیونی رایگان🎁"),
         KeyboardButton("🎁 ردیم کد کالاف"),
         KeyboardButton("📊 لینک دعوت (رفرال)"),
         KeyboardButton("🌐 DNS اختصاصی رایگان"),

@@ -42,7 +42,7 @@ def main_menu(user_id):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
-        KeyboardButton("🎁 اکانت ۲۱ میتیک رایگان 🎁"),
+        KeyboardButton("🎁 اکانت ۴ متیک ۱۳ لجند 🎁"),
         KeyboardButton("🎁 پست سایرن رایگان"),
         KeyboardButton("🎁 پست گوست متیک رایگان🎁"),
         KeyboardButton("🎁 اکانت ۸۰ میلیونی رایگان🎁"),
@@ -134,9 +134,9 @@ def handle(message):
             data[user_id]['last_daily'] = today
             save_data(data)
 
-    elif message.text == "🎁 اکانت ۲۱ میتیک رایگان 🎁":
+    elif message.text == "🎁 اکانت ۴ متیک ۱۳ لجند 🎁":
         if current_invites >= 3:
-            prize_msg = "💎 تبریک! شما ۳ نفر را دعوت کردید و اکانت ۲۱ میتیک برای شما آزاد شد:\n\nkeyvan.hozouri@yahoo.com\nKh112288"
+            prize_msg = "💎 تبریک! شما ۳ نفر را دعوت کردید و اکانت ۴ متیک ۱۳ لجند برای شما آزاد شد:\n\npapiloo1057@gmail.com\nPa6624426"
             bot.send_message(message.chat.id, prize_msg)
         else:
             remaining = 3 - current_invites
@@ -145,7 +145,7 @@ def handle(message):
             ref_msg = (
                 f"⚠️ شما هنوز ۳ نفر را دعوت نکرده‌اید!\n\n"
                 f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
-                f"❌ تعداد باقی‌مانده برای دریافت اکانت ۲۱ میتیک: {remaining} نفر\n\n"
+                f"❌ تعداد باقی‌مانده برای دریافت اکانت ۴ متیک ۱۳ لجند: {remaining} نفر\n\n"
                 f"🔗 برای دریافت اکانت، لینک زیر را برای دوستان خود بفرستید:\n{ref_link}"
             )
             bot.send_message(message.chat.id, ref_msg)

@@ -44,6 +44,7 @@ def main_menu(user_id):
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
         KeyboardButton("🎁 اکانت ۲۱ میتیک رایگان 🎁"),
         KeyboardButton("🎁 پست سایرن رایگان"),
+        KeyboardButton("🎁 پست گوست متیک رایگان🎁"),
         KeyboardButton("🎁 اکانت ۸۰ میلیونی رایگان🎁"),
         KeyboardButton("🎁 ردیم کد کالاف"),
         KeyboardButton("📊 لینک دعوت (رفرال)"),
@@ -128,21 +129,21 @@ def handle(message):
         if data[user_id].get('last_daily') == today:
             bot.send_message(message.chat.id, "❌ شما امروز اکانت روزانه را دریافت کردید. فردا دوباره تلاش کنید.")
         else:
-            msg = "🎁 این هم اکانت روزانه شما:\n\nbruno.rodrigo.garbo@gmail.com\nMaxibruno95"
+            msg = "🎁 این هم اکانت روزانه شما:\n\nluizaugustofeio@gmail.com\nEstravagante1"
             bot.send_message(message.chat.id, msg)
             data[user_id]['last_daily'] = today
             save_data(data)
 
     elif message.text == "🎁 اکانت ۲۱ میتیک رایگان 🎁":
-        if current_invites >= 5:
-            prize_msg = "💎 تبریک! شما ۵ نفر را دعوت کردید و اکانت ۲۱ میتیک برای شما آزاد شد:\n\nkeyvan.hozouri@yahoo.com\nKh112288"
+        if current_invites >= 3:
+            prize_msg = "💎 تبریک! شما ۳ نفر را دعوت کردید و اکانت ۲۱ میتیک برای شما آزاد شد:\n\nkeyvan.hozouri@yahoo.com\nKh112288"
             bot.send_message(message.chat.id, prize_msg)
         else:
-            remaining = 5 - current_invites
+            remaining = 3 - current_invites
             ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
             
             ref_msg = (
-                f"⚠️ شما هنوز ۵ نفر را دعوت نکرده‌اید!\n\n"
+                f"⚠️ شما هنوز ۳ نفر را دعوت نکرده‌اید!\n\n"
                 f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
                 f"❌ تعداد باقی‌مانده برای دریافت اکانت ۲۱ میتیک: {remaining} نفر\n\n"
                 f"🔗 برای دریافت اکانت، لینک زیر را برای دوستان خود بفرستید:\n{ref_link}"
@@ -157,6 +158,15 @@ def handle(message):
             "⚠️ لطفاً پس از ورود اطلاعات را تغییر دهید."
         )
         bot.send_message(message.chat.id, siren_msg)
+
+    elif message.text == "🎁 پست گوست متیک رایگان🎁":
+        ghost_msg = (
+            "🎁 اطلاعات اکانت پست گوست متیک رایگان شما:\n\n"
+            "📧 ایمیل: keyvan.hozouri@yahoo.com\n"
+            "🔑 پسورد: Kh112288\n\n"
+            "⚠️ لطفاً پس از ورود اطلاعات را تغییر دهید."
+        )
+        bot.send_message(message.chat.id, ghost_msg)
 
     elif message.text == "🎁 اکانت ۸۰ میلیونی رایگان🎁":
         account_85m_msg = (

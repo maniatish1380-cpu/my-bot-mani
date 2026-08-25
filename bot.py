@@ -42,7 +42,8 @@ def main_menu(user_id):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
-        KeyboardButton("🎁 اکانت ۴ متیک ۱۳ لجند 🎁"),
+        KeyboardButton("🎁 دوتا متیک فول بالا"),
+        KeyboardButton("🎁 پست 117🎁"),
         KeyboardButton("🎁 پست سایرن رایگان"),
         KeyboardButton("🎁 پست گوست متیک رایگان🎁"),
         KeyboardButton("🎁 اکانت ۸۰ میلیونی رایگان🎁"),
@@ -63,6 +64,18 @@ def start(message):
     user_id = str(message.from_user.id)
     numeric_user_id = message.from_user.id
     
+    args = message.text.split()
+    data = load_data()
+    
+    # ثبت کاربر و سیستم رفرال دقیق پیش از چک کردن جوین اجباری یا بعد از آن برای جلوگیری از ثبت نشدن
+    if user_id not in data:
+        data[user_id] = {'invites': 0, 'last_daily': None}
+        if len(args) > 1:
+            inviter_id = args[1]
+            if inviter_id != user_id and inviter_id in data:
+                data[inviter_id]['invites'] += 1
+        save_data(data)
+
     # اول چک می‌کنیم عضو کانال هست یا نه
     if not check_membership(numeric_user_id):
         bot.send_message(
@@ -71,17 +84,6 @@ def start(message):
             reply_markup=not_joined_markup()
         )
         return
-
-    args = message.text.split()
-    data = load_data()
-    
-    if user_id not in data:
-        data[user_id] = {'invites': 0, 'last_daily': None}
-        if len(args) > 1:
-            inviter_id = args[1]
-            if inviter_id != user_id and inviter_id in data:
-                data[inviter_id]['invites'] += 1
-        save_data(data)
         
     bot.send_message(message.chat.id, "سلام! منوی ربات بروز شد:", reply_markup=main_menu(numeric_user_id))
 
@@ -101,6 +103,13 @@ def handle(message):
     user_id = str(message.from_user.id)
     numeric_user_id = message.from_user.id
     
+    data = load_data()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    if user_id not in data:
+        data[user_id] = {'invites': 0, 'last_daily': None}
+        save_data(data)
+
     # چک کردن جوین اجباری برای تمام پیام‌ها و دکمه‌ها
     if not check_membership(numeric_user_id):
         bot.send_message(
@@ -109,12 +118,6 @@ def handle(message):
             reply_markup=not_joined_markup()
         )
         return
-
-    data = load_data()
-    today = datetime.now().strftime("%Y-%m-%d")
-
-    if user_id not in data:
-        data[user_id] = {'invites': 0, 'last_daily': None}
 
     current_invites = data[user_id].get('invites', 0)
 
@@ -129,14 +132,25 @@ def handle(message):
         if data[user_id].get('last_daily') == today:
             bot.send_message(message.chat.id, "❌ شما امروز اکانت روزانه را دریافت کردید. فردا دوباره تلاش کنید.")
         else:
-            msg = "🎁 این هم اکانت روزانه شما:\n\nluizaugustofeio@gmail.com\nEstravagante1"
+            msg = "🎁 این هم اکانت روزانه شما:\n\nmohebnaroei3@gmail.com\n3614112063"
             bot.send_message(message.chat.id, msg)
             data[user_id]['last_daily'] = today
             save_data(data)
 
-    elif message.text == "🎁 اکانت ۴ متیک ۱۳ لجند 🎁":
+    elif message.text == "🎁 دوتا متیک فول بالا":
         if current_invites >= 3:
-            prize_msg = "💎 تبریک! شما ۳ نفر را دعوت کردید و اکانت ۴ متیک ۱۳ لجند برای شما آزاد شد:\n\npapiloo1057@gmail.com\nPa6624426"
+            prize_msg = (
+                "💎 تبریک! شما ۳ نفر را دعوت کردید و اکانت دوتا متیک فول بالا برای شما آزاد شد:\n\n"
+                "Email: cesar.anzola@hotmail.es\n"
+                "Pass: cesar28208214\n"
+                "Nick: CGM长Cesar\n"
+                "5000+880+18000\n\n"
+                "Activision \n"
+                "Email: luisbecerra0505@gmail.com\n"
+                "Pass: Luisdonaldo18\n"
+                "Nick: LUIZ亗\n"
+                "Cp: 10800"
+            )
             bot.send_message(message.chat.id, prize_msg)
         else:
             remaining = 3 - current_invites
@@ -145,10 +159,14 @@ def handle(message):
             ref_msg = (
                 f"⚠️ شما هنوز ۳ نفر را دعوت نکرده‌اید!\n\n"
                 f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
-                f"❌ تعداد باقی‌مانده برای دریافت اکانت ۴ متیک ۱۳ لجند: {remaining} نفر\n\n"
+                f"❌ تعداد باقی‌مانده برای دریافت اکانت دوتا متیک فول بالا: {remaining} نفر\n\n"
                 f"🔗 برای دریافت اکانت، لینک زیر را برای دوستان خود بفرستید:\n{ref_link}"
             )
             bot.send_message(message.chat.id, ref_msg)
+
+    elif message.text == "🎁 پست 117🎁":
+        post_117_msg = "🎁 اطلاعات اکانت پست 117 شما:\n\nlhznn2006@icloud.com \nLhznxl16"
+        bot.send_message(message.chat.id, post_117_msg)
 
     elif message.text == "🎁 پست سایرن رایگان":
         siren_msg = (

@@ -5,11 +5,12 @@ import os
 from datetime import datetime
 
 TOKEN = '8873507987:AAGgl-3ieIbEnYWblGAnjHxerKii5kxs_E0'
-ADMIN_ID = 6903327854  # آیدی عددی شما برای دسترسی به آمار
+ADMIN_ID = 6903327854  # آیدی عددی ادمین
+
 bot = telebot.TeleBot(TOKEN)
 
 DATA_FILE = 'users.json'
-CHANNEL_USERNAME = '@cod_manii_yt'  # آیدی کانال شما برای جوین اجباری
+CHANNEL_USERNAME = '@cod_manii_yt'  # آیدی کانال برای جوین اجباری
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -31,18 +32,19 @@ def check_membership(user_id):
         pass
     return False
 
-# دکمه‌های عضویت در کانال (شیشه ای)
+# دکمه‌های شیشه‌ای جوین اجباری
 def not_joined_markup():
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("📢 عضويت در کانال تلگرام", url=f"https://t.me/cod_manii_yt"))
+    markup.add(InlineKeyboardButton("📢 عضويت در کانال تلگرام", url="https://t.me/cod_manii_yt"))
     markup.add(InlineKeyboardButton("🔄 بررسی عضویت", callback_data="check_join"))
     return markup
 
 def main_menu(user_id):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
+        KeyboardButton("💥جایزه ویژه💥"),
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
-        KeyboardButton("🎁 دوتا متیک فول بالا"),
+        KeyboardButton("🎁 ۴۰ فول رایگان"),
         KeyboardButton("🎁 پست 117🎁"),
         KeyboardButton("🎁 پست سایرن رایگان"),
         KeyboardButton("🎁 پست گوست متیک رایگان🎁"),
@@ -54,7 +56,7 @@ def main_menu(user_id):
         KeyboardButton("📸 پیج اینستاگرام"),
         KeyboardButton("🔄 بروزرسانی منو")
     )
-    # دکمه آمار فقط برای ادمین نمایش داده می‌شود
+    # دکمه آمار فقط برای ادمین
     if user_id == ADMIN_ID:
         markup.add(KeyboardButton("📊 اطلاعات و آمار ربات (ادمین)"))
     return markup
@@ -67,7 +69,7 @@ def start(message):
     args = message.text.split()
     data = load_data()
     
-    # ثبت کاربر و سیستم رفرال دقیق پیش از چک کردن جوین اجباری یا بعد از آن برای جلوگیری از ثبت نشدن
+    # سیستم رفرال‌گیری
     if user_id not in data:
         data[user_id] = {'invites': 0, 'last_daily': None}
         if len(args) > 1:
@@ -76,7 +78,7 @@ def start(message):
                 data[inviter_id]['invites'] += 1
         save_data(data)
 
-    # اول چک می‌کنیم عضو کانال هست یا نه
+    # چک کردن عضویت در کانال
     if not check_membership(numeric_user_id):
         bot.send_message(
             message.chat.id, 
@@ -87,7 +89,6 @@ def start(message):
         
     bot.send_message(message.chat.id, "سلام! منوی ربات بروز شد:", reply_markup=main_menu(numeric_user_id))
 
-# هندلر برای دکمه شیشه ای بررسی عضویت
 @bot.callback_query_handler(func=lambda call: call.data == "check_join")
 def callback_check_join(call):
     user_id = call.from_user.id
@@ -110,7 +111,7 @@ def handle(message):
         data[user_id] = {'invites': 0, 'last_daily': None}
         save_data(data)
 
-    # چک کردن جوین اجباری برای تمام پیام‌ها و دکمه‌ها
+    # چک کردن عضویت در کانال برای تمامی پیام‌ها
     if not check_membership(numeric_user_id):
         bot.send_message(
             message.chat.id, 
@@ -121,7 +122,21 @@ def handle(message):
 
     current_invites = data[user_id].get('invites', 0)
 
-    if message.text == "🔄 بروزرسانی منو":
+    if message.text == "💥جایزه ویژه💥":
+        special_msg = (
+            "💥 **شرایط دریافت جایزه ویژه** 💥\n\n"
+            "برای دریافت جایزه ویژه مراحل زیر رو انجام بده:\n"
+            "1️⃣ برو داخل پست اینستاگرام زیر\n"
+            "2️⃣ پست رو **لایک** کن، **کامنت** بزار و **ذخیره (Save)** کن\n"
+            "3️⃣ پست رو برای **۳۰ نفر از دوستات** ارسال کن\n"
+            "4️⃣ از تمامی مراحل شات (اسکرین‌شات) بگیر و برام به آیدی زیر بفرست:\n"
+            "👉 @Ssmmssllpp\n\n"
+            "🔗 **لینک پست اینستاگرام:**\n"
+            "https://www.instagram.com/reel/DdEkFSINFUl/?stkn=MXY2a3M1c3k3N3Zi"
+        )
+        bot.send_message(message.chat.id, special_msg, disable_web_page_preview=True)
+
+    elif message.text == "🔄 بروزرسانی منو":
         bot.send_message(
             message.chat.id, 
             "✅ منوی شما با موفقیت بروزرسانی شد و آخرین تغییرات اعمال گردید:", 
@@ -132,37 +147,35 @@ def handle(message):
         if data[user_id].get('last_daily') == today:
             bot.send_message(message.chat.id, "❌ شما امروز اکانت روزانه را دریافت کردید. فردا دوباره تلاش کنید.")
         else:
-            msg = "🎁 این هم اکانت روزانه شما:\n\nmohebnaroei3@gmail.com\n3614112063"
-            bot.send_message(message.chat.id, msg)
+            msg = (
+                "🎁 **این هم اکانت روزانه شما:**\n\n"
+                "📧 ایمیل: `tannazfarshchi@gmail.com`\n"
+                "🔑 پسورد: `bedhard3223`"
+            )
+            bot.send_message(message.chat.id, msg, parse_mode="Markdown")
             data[user_id]['last_daily'] = today
             save_data(data)
 
-    elif message.text == "🎁 دوتا متیک فول بالا":
-        if current_invites >= 3:
+    elif message.text == "🎁 ۴۰ فول رایگان":
+        if current_invites >= 100:
             prize_msg = (
-                "💎 تبریک! شما ۳ نفر را دعوت کردید و اکانت دوتا متیک فول بالا برای شما آزاد شد:\n\n"
-                "Email: cesar.anzola@hotmail.es\n"
-                "Pass: cesar28208214\n"
-                "Nick: CGM长Cesar\n"
-                "5000+880+18000\n\n"
-                "Activision \n"
-                "Email: luisbecerra0505@gmail.com\n"
-                "Pass: Luisdonaldo18\n"
-                "Nick: LUIZ亗\n"
-                "Cp: 10800"
+                "💎 **تبریک! شما ۱۰۰ نفر را دعوت کردید و اکانت ۴۰ فول رایگان برای شما آزاد شد:**\n\n"
+                "📧 ایمیل: `CuentadePobreperayaque12A@hotmail.com`\n"
+                "🔑 پسورد: `Venta135`"
             )
-            bot.send_message(message.chat.id, prize_msg)
+            bot.send_message(message.chat.id, prize_msg, parse_mode="Markdown")
         else:
-            remaining = 3 - current_invites
+            remaining = 100 - current_invites
             ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
             
             ref_msg = (
-                f"⚠️ شما هنوز ۳ نفر را دعوت نکرده‌اید!\n\n"
-                f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
-                f"❌ تعداد باقی‌مانده برای دریافت اکانت دوتا متیک فول بالا: {remaining} نفر\n\n"
+                f"⚠️ **عشقا به دلیل سیف و تک سیو بودن اکانت مجبورم ۱۰۰ نفر رفرال‌گیری بزارم.**\n"
+                f"توجه کنین این اکانت فقط به یک نفر میرسه پس فرصت محدوده و فقط یک نفر میتونه به این اکانت برسه!\n\n"
+                f"👥 تعداد دعوت‌های فعلی شما: **{current_invites}** نفر\n"
+                f"❌ تعداد باقی‌مانده برای دریافت اکانت: **{remaining}** نفر\n\n"
                 f"🔗 برای دریافت اکانت، لینک زیر را برای دوستان خود بفرستید:\n{ref_link}"
             )
-            bot.send_message(message.chat.id, ref_msg)
+            bot.send_message(message.chat.id, ref_msg, parse_mode="Markdown")
 
     elif message.text == "🎁 پست 117🎁":
         post_117_msg = "🎁 اطلاعات اکانت پست 117 شما:\n\nlhznn2006@icloud.com \nLhznxl16"
@@ -238,3 +251,4 @@ def handle(message):
 
 print("Bot is running perfectly...")
 bot.infinity_polling()
+

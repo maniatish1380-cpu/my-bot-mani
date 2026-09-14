@@ -1,247 +1,241 @@
-import telebot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-import json
 import os
-from datetime import datetime
+import telebot
+from telebot.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
+import json
 
-TOKEN = '8873507987:AAGgl-3ieIbEnYWblGAnjHxerKii5kxs_E0'
-ADMIN_ID = 6903327854  # آیدی عددی شما برای دسترسی به آمار
-bot = telebot.TeleBot(TOKEN)
+# ==================== تنظیمات ربات ====================
+API_TOKEN = '8873507987:AAG3xEQ1fF8SQHjdfY2HQxA5wuYDRKltlPs'  # توکن جدید شما
+bot = telebot.TeleBot(API_TOKEN)
 
+# آیدی ادمین و کانال اجباری
+ADMIN_ID = 6903327854
+CHANNEL_USERNAME = '@TRUST1_MANI'  # یوزرنیم کانال شما
+
+# تعداد رفرال مورد نیاز برای گرفتن جایزه 20 فول
+REQUIRED_REFS_FOR_20_FULL = 45
+
+# متن جایزه 20 فول
+REWARD_20_FULL_PRIZE = (
+    '🎁 تبریک! شما به تعداد رفرال مقرر (۴۵ نفر) رسیدید.\nلینک جایزه'
+    ' ۲۰ فول شما:\nhttps://t.me/TRUST1_MANI/28'
+)
+
+# فایل ذخیره اطلاعات کاربران
 DATA_FILE = 'users.json'
-CHANNEL_USERNAME = '@cod_manii_yt'  # آیدی کانال شما برای جوین اجباری
+
 
 def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
+  if not os.path.exists(DATA_FILE):
+    return {}
+  try:
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
+      return json.load(f)
+  except:
     return {}
 
+
 def save_data(data):
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f)
+  with open(DATA_FILE, 'w', encoding='utf-8') as f:
+    json.dump(data, f, ensure_ascii=False, indent=4)
 
-# تابع بررسی عضویت کاربر در کانال
+
+# بررسی عضویت کاربر در کانال
 def check_membership(user_id):
-    try:
-        member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
-        if member.status in ['member', 'administrator', 'creator']:
-            return True
-    except Exception:
-        pass
-    return False
+  try:
+    status = bot.get_chat_member(CHANNEL_USERNAME, user_id).status
+    return status in ['member', 'administrator', 'creator']
+  except Exception as e:
+    print(f'Error checking membership: {e}')
+    return True
 
-# دکمه‌های عضویت در کانال (شیشه ای)
+
+# دکمه‌های شیشه‌ای برای عضویت اجباری
 def not_joined_markup():
-    markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("📢 عضويت در کانال تلگرام", url=f"https://t.me/cod_manii_yt"))
-    markup.add(InlineKeyboardButton("🔄 بررسی عضویت", callback_data="check_join"))
-    return markup
+  markup = InlineKeyboardMarkup()
+  markup.add(
+      InlineKeyboardButton(
+          '📢 عضويت در كانال', url=f'https://t.me/{CHANNEL_USERNAME[1:]}'
+      )
+  )
+  markup.add(
+      InlineKeyboardButton('🔄 عضو شدم، بررسی مجدد', callback_data='check_join')
+  )
+  return markup
 
-def main_menu(user_id):
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    markup.add(
-        KeyboardButton("🎁 اکانت روزانه 🎁"), 
-        KeyboardButton("🎁 40 فول رایگان"),
-        KeyboardButton("💥اکانت 20 فول رایگان💥"),
-        KeyboardButton("💥جایزه ویژه💥"),
-        KeyboardButton("🎁 اکانت خام 117🎁"),
-        KeyboardButton("🎁 پست سایرن رایگان"),
-        KeyboardButton("🎁 پست گوست متیک رایگان🎁"),
-        KeyboardButton("🎁 اکانت ۸۰ میلیونی رایگان🎁"),
-        KeyboardButton("🎁 ردیم کد کالاف"),
-        KeyboardButton("📊 لینک دعوت (رفرال)"),
-        KeyboardButton("🌐 DNS اختصاصی رایگان"),
-        KeyboardButton("📢 کانال تلگرام"),
-        KeyboardButton("📸 پیج اینستاگرام"),
-        KeyboardButton("🔄 بروزرسانی منو")
-    )
-    # دکمه آمار فقط برای ادمین نمایش داده می‌شود
-    if user_id == ADMIN_ID:
-        markup.add(KeyboardButton("📊 اطلاعات و آمار ربات (ادمین)"))
-    return markup
+
+# کیبورد اصلی ربات
+def main_menu():
+  markup = ReplyKeyboardMarkup(resize_keyboard=True)
+  markup.add(KeyboardButton('🎁 فول رایگان 40 👤'))
+  markup.add(KeyboardButton('🎁 اکانت 20 فول رایگان'))
+  markup.add(KeyboardButton('👥 لینک دعوت (رفرال)'))
+  markup.add(KeyboardButton('📢 کانال تلگرام'), KeyboardButton('📸 پیج اینستاگرام'))
+  return markup
+
 
 @bot.message_handler(commands=['start'])
-def start(message):
-    user_id = str(message.from_user.id)
-    numeric_user_id = message.from_user.id
-    
-    args = message.text.split()
-    data = load_data()
-    
-    # ثبت کاربر و سیستم رفرال دقیق پیش از چک کردن جوین اجباری یا بعد از آن برای جلوگیری از ثبت نشدن
-    if user_id not in data:
-        data[user_id] = {'invites': 0, 'last_daily': None}
-        if len(args) > 1:
-            inviter_id = args[1]
-            if inviter_id != user_id and inviter_id in data:
-                data[inviter_id]['invites'] += 1
-        save_data(data)
+def send_welcome(message):
+  user_id = str(message.from_user.id)
+  args = message.text.split()
 
-    # اول چک می‌کنیم عضو کانال هست یا نه
-    if not check_membership(numeric_user_id):
-        bot.send_message(
-            message.chat.id, 
-            "⚠️ برای استفاده از ربات، ابتدا باید در کانال ما عضو شوید!\n\nپس از عضویت، روی دکمه‌ی «بررسی عضویت» بزنید:", 
-            reply_markup=not_joined_markup()
-        )
-        return
-        
-    bot.send_message(message.chat.id, "سلام! منوی ربات بروز شد:", reply_markup=main_menu(numeric_user_id))
+  data = load_data()
 
-# هندلر برای دکمه شیشه ای بررسی عضویت
-@bot.callback_query_handler(func=lambda call: call.data == "check_join")
+  # ثبت‌نام کاربر جدید
+  if user_id not in data:
+    data[user_id] = {'invited_count': 0, 'invited_by': None, 'claimed_20_full': False}
+
+    # بررسی سیستم رفرال
+    if len(args) > 1:
+      inviter_id = args[1]
+      if inviter_id != user_id and inviter_id in data:
+        data[user_id]['invited_by'] = inviter_id
+        data[inviter_id]['invited_count'] += 1
+
+        # ارسال پیام به معرف
+        try:
+          bot.send_message(
+              inviter_id,
+              f'🎉 یک نفر با لینک دعوت شما وارد ربات شد!\nتعداد رفرال‌های شما:'
+              f' {data[inviter_id]["invited_count"]}',
+          )
+
+          if (
+              data[inviter_id]['invited_count'] >= REQUIRED_REFS_FOR_20_FULL
+              and not data[inviter_id]['claimed_20_full']
+          ):
+            data[inviter_id]['claimed_20_full'] = True
+            bot.send_message(
+                inviter_id,
+                f'🏆 تبریک! شما به {REQUIRED_REFS_FOR_20_FULL} رفرال رسیدید و'
+                f' جایزه خود را دریافت کردید:\n\n{REWARD_20_FULL_PRIZE}',
+            )
+        except Exception as e:
+          print(f'Could not notify inviter {inviter_id}: {e}')
+
+    save_data(data)
+
+  if not check_membership(int(user_id)):
+    try:
+      bot.send_message(
+          message.chat.id,
+          '⚠️ برای استفاده از ربات، ابتدا باید در کانال ما عضو شوید 👇',
+          reply_markup=not_joined_markup(),
+      )
+    except Exception as e:
+      print(f'Error: {e}')
+    return
+
+  try:
+    bot.send_message(
+        message.chat.id,
+        'سلام! به ربات خوش آمدید. از منوی زیر یکی از گزینه‌ها را انتخاب کنید:',
+        reply_markup=main_menu(),
+    )
+  except Exception as e:
+    print(f'Error: {e}')
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'check_join')
 def callback_check_join(call):
-    user_id = call.from_user.id
-    if check_membership(user_id):
-        bot.answer_callback_query(call.id, "✅ تایید شد! حالا می‌تونید از ربات استفاده کنید.")
-        bot.delete_message(call.message.chat.id, call.message.message_id)
-        bot.send_message(call.message.chat.id, "سلام! به ربات خوش آمدید:", reply_markup=main_menu(user_id))
-    else:
-        bot.answer_callback_query(call.id, "❌ شما هنوز در کانال عضو نشده‌اید!", show_alert=True)
+  user_id = str(call.from_user.id)
+  if check_membership(int(user_id)):
+    bot.answer_callback_query(call.id, '✅ عضویت شما تایید شد!')
+    bot.send_message(
+        call.message.chat.id,
+        'ممنون از عضویت شما! منوی ربات بروز شد.',
+        reply_markup=main_menu(),
+    )
+  else:
+    bot.answer_callback_query(
+        call.id, '❌ شما هنوز در کانال عضو نشده‌اید!', show_alert=True
+    )
+
 
 @bot.message_handler(func=lambda message: True)
-def handle(message):
-    user_id = str(message.from_user.id)
-    numeric_user_id = message.from_user.id
-    
-    data = load_data()
+def handle_all_messages(message):
+  user_id = str(message.from_user.id)
 
-    if user_id not in data:
-        data[user_id] = {'invites': 0, 'last_daily': None}
-        save_data(data)
+  if not check_membership(int(user_id)):
+    bot.send_message(
+        message.chat.id,
+        '⚠️ برای استفاده از ربات، ابتدا باید در کانال ما عضو شوید 👇',
+        reply_markup=not_joined_markup(),
+    )
+    return
 
-    # چک کردن جوین اجباری برای تمام پیام‌ها و دکمه‌ها
-    if not check_membership(numeric_user_id):
-        bot.send_message(
-            message.chat.id, 
-            "⚠️ برای استفاده از ربات، ابتدا باید در کانال ما عضو شوید!", 
-            reply_markup=not_joined_markup()
+  text = message.text
+  data = load_data()
+  if user_id not in data:
+    data[user_id] = {'invited_count': 0, 'invited_by': None, 'claimed_20_full': False}
+    save_data(data)
+
+  if text == '📢 کانال تلگرام':
+    bot.send_message(
+        message.chat.id, f'📢 کانال ما: https://t.me/{CHANNEL_USERNAME[1:]}'
+    )
+  elif text == '📸 پیج اینستاگرام':
+    bot.send_message(
+        message.chat.id, '📸 پیج اینستاگرام ما: https://instagram.com/maniiii.yt'
+    )
+  elif text == '👥 لینک دعوت (رفرال)':
+    bot_info = bot.get_me()
+    ref_link = f'https://t.me/{bot_info.username}?start={user_id}'
+    count = data[user_id].get('invited_count', 0)
+    bot.send_message(
+        message.chat.id,
+        f'🔗 با ارسال لینک زیر به دوستانتان، می‌توانید آنها را دعوت کنید:\n\n`{ref_link}`\n\n👥'
+        f' تعداد افرادی که تا الان دعوت کردید: **{count} نفر**\n🎁 برای دریافت'
+        f' بخش **اکانت ۲۰ فول رایگان** به **{REQUIRED_REFS_FOR_20_FULL} نفر**'
+        ' رفرال نیاز داری.',
+        parse_mode='Markdown',
+    )
+  elif 'فول رایگان 40' in text:
+    markup_post = InlineKeyboardMarkup()
+    markup_post.add(
+        InlineKeyboardButton(
+            '🔗 ورود به پست ۴۰ فول رایگان',
+            url='https://t.me/TRUST1_MANI/28',
         )
-        return
+    )
+    bot.send_message(
+        message.chat.id,
+        '🎁 **بخش فول رایگان ۴۰:**\n\nبرای دریافت و مشاهده پست مربوطه، روی'
+        ' دکمه زیر کلیک کنید:',
+        reply_markup=markup_post,
+    )
+  elif text == '🎁 اکانت 20 فول رایگان':
+    count = data[user_id].get('invited_count', 0)
+    already_claimed = data[user_id].get('claimed_20_full', False)
 
-    current_invites = data[user_id].get('invites', 0)
+    if already_claimed:
+      bot.send_message(
+          message.chat.id,
+          '❌ شما قبلاً جایزه این بخش را دریافت کرده‌اید!',
+          reply_markup=main_menu(),
+      )
+    elif count >= REQUIRED_REFS_FOR_20_FULL:
+      data[user_id]['claimed_20_full'] = True
+      save_data(data)
+      bot.send_message(
+          message.chat.id, REWARD_20_FULL_PRIZE, reply_markup=main_menu()
+      )
+    else:
+      needed = REQUIRED_REFS_FOR_20_FULL - count
+      bot.send_message(
+          message.chat.id,
+          f'❌ شرایط دریافت اکانت ۲۰ فول رایگان تکمیل نشده است!!\n📌 تعداد رفرال'
+          f' مورد نیاز: **{REQUIRED_REFS_FOR_20_FULL} نفر**\n⚠️ تعداد فعلی شما:'
+          f' **{count} نفر**\n\n⏳ شما باید **{needed} نفر دیگر** دعوت کنی تا'
+          ' این جایزه آزاد شود.',
+          reply_markup=main_menu(),
+          parse_mode='Markdown',
+      )
 
-    if message.text == "🔄 بروزرسانی منو":
-        bot.send_message(
-            message.chat.id, 
-            "✅ منوی شما با موفقیت بروزرسانی شد و آخرین تغییرات اعمال گردید:", 
-            reply_markup=main_menu(numeric_user_id)
-        )
 
-    elif message.text == "🎁 اکانت روزانه 🎁":
-        bot.send_message(message.chat.id, "❌ این بخش فعلاً غیرفعال و خاموش می‌باشد.")
-
-    elif message.text == "🎁 40 فول رایگان":
-        bot.send_message(
-            message.chat.id, 
-            "🎁 این اکانت به برنده اش تعلق گرفته برای دیدن تحویل اکانت هم این لینک رو بزار چک رضایت تحویل رو چک کنن:\n"
-            "https://t.me/cod_manii_yt/94\n\n"
-            "اگر میخوای برنده بعدی تو باشی بزن رو گزینه 💥اکانت 20 فول رایگان💥"
-        )
-
-    elif message.text == "💥اکانت 20 فول رایگان💥":
-        if current_invites >= 45:
-            prize_msg = (
-                "💎 تبریک! شما ۴۵ نفر را دعوت کردید و اکانت ۲۰ فول رایگان به شما تعلق گرفت:\n\n"
-                "Hajsuahsjs@gmail.com\n"
-                "Aiiw2828"
-            )
-            bot.send_message(message.chat.id, prize_msg)
-        else:
-            remaining = 45 - current_invites
-            ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
-            
-            ref_msg = (
-                f"⚠️ برای دریافت اکانت ۲۰ فول رایگان، باید ۴۵ نفر رفرال بگیرید.\n\n"
-                f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
-                f"❌ تعداد باقی‌مانده: {remaining} نفر\n\n"
-                f"🔗 برای دریافت اکانت، لینک زیر را برای دوستان خود بفرستید:\n{ref_link}"
-            )
-            bot.send_message(message.chat.id, ref_msg)
-
-    elif message.text == "💥جایزه ویژه💥":
-        special_prize_msg = (
-            "💥 برای شرکت در جایزه ویژه:\n\n"
-            "لطفاً بروید داخل این پست اینستاگرام، آن را لایک کنید، کامنت بگذارید، ذخیره (Save) کنید و برای ۳۰ نفر از دوستانتان ارسال کنید؛ سپس شات آن را برای من به آیدی زیر بفرستید:\n\n"
-            "🆔 @Ssmmssllpp\n\n"
-            "🔗 لینک پست اینستاگرام:\n"
-            "https://www.instagram.com/reel/DdEkFSINFUl/?stkn=MXY2a3M1c3k3N3Zi"
-        )
-        bot.send_message(message.chat.id, special_prize_msg)
-
-    elif message.text == "🎁 اکانت خام 117🎁":
-        post_117_msg = "🎁 اطلاعات اکانت خام 117 شما:\n\nparsa.parsa.92@gmail.com\nparsacallaf92"
-        bot.send_message(message.chat.id, post_117_msg)
-
-    elif message.text == "🎁 پست سایرن رایگان":
-        siren_msg = (
-            "🎁 اطلاعات اکانت پست سایرن رایگان شما:\n\n"
-            "📧 ایمیل: Giselhrndz@gmail.com\n"
-            "🔑 پسورد: Liam180420\n\n"
-            "⚠️ لطفاً پس از ورود اطلاعات را تغییر دهید."
-        )
-        bot.send_message(message.chat.id, siren_msg)
-
-    elif message.text == "🎁 پست گوست متیک رایگان🎁":
-        ghost_msg = (
-            "🎁 اطلاعات اکانت پست گوست متیک رایگان شما:\n\n"
-            "📧 ایمیل: keyvan.hozouri@yahoo.com\n"
-            "🔑 پسورد: Kh112288\n\n"
-            "⚠️ لطفاً پس از ورود اطلاعات را تغییر دهید."
-        )
-        bot.send_message(message.chat.id, ghost_msg)
-
-    elif message.text == "🎁 اکانت ۸۰ میلیونی رایگان🎁":
-        account_85m_msg = (
-            "🎁 اطلاعات اکانت ۸۰ میلیونی رایگان شما:\n\n"
-            "📧 ایمیل: imamirnazari@gmail.com\n"
-            "🔑 پسورد: meysam2020\n\n"
-            "⚠️ لطفاً پس از ورود اطلاعات را تغییر دهید."
-        )
-        bot.send_message(message.chat.id, account_85m_msg)
-
-    elif message.text == "🎁 ردیم کد کالاف":
-        if current_invites >= 1:
-            codes = (
-                "DCEPZBZKFD\nDCCKZBZNB5\nDCCJZBZN4J\nDCCHZBZR3K\nDCCGZBZNCX\nDBGOZBZD8M\n"
-                "DAVAZBZ9EP\nDAVCZBZA9M\nDAVBZBZX5A\nDBDKZBZQUU\nDBDJZBZAJU\nDAVGZBZRN6\n"
-                "DBVPZBZNDX\nDBVHZBZUF3\nDBVNZBZBQW\nWELOVEMOM\nDCUPZBZ84M\nCTULZBZBXP\n"
-                "CTJQZBZAFS\nCTJNZBZKJ8\nCUAMZBZFCF\n\n"
-                "⚠️ نکته: اگر موقع زدن بعضی از این کدها ارور داد، یعنی ظرفیت آن کد پر شده یا منقضی شده است؛ چون کدهای اینستاگرام و بازی‌ها ظرفیت محدودی دارند. اول کدهای بالای لیست را تست کنید."
-            )
-            bot.send_message(message.chat.id, codes)
-        else:
-            ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
-            ref_msg = (
-                f"⚠️ برای دریافت ردیم کدهای کالاف، باید حداقل ۱ نفر را دعوت کرده باشید!\n\n"
-                f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
-                f"❌ تعداد باقی‌مانده: ۱ نفر\n\n"
-                f"🔗 لینک دعوت اختصاصی شما:\n{ref_link}"
-            )
-            bot.send_message(message.chat.id, ref_msg)
-
-    elif message.text == "📊 لینک دعوت (رفرال)":
-        ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
-        bot.send_message(message.chat.id, f"📊 وضعیت دعوت‌های شما: {current_invites} نفر\n\n🔗 لینک اختصاصی شما:\n{ref_link}")
-
-    elif message.text == "🌐 DNS اختصاصی رایگان":
-        dns_msg = "🌐 DNS اختصاصی و پرسرعت رایگان:\n\nPrimary DNS: 77.88.8.8\nSecondary DNS: 88.198.220.33"
-        bot.send_message(message.chat.id, dns_msg)
-
-    elif message.text == "📢 کانال تلگرام":
-        bot.send_message(message.chat.id, "📢 کانال ما:\nhttps://t.me/cod_manii_yt")
-
-    elif message.text == "📸 پیج اینستاگرام":
-        bot.send_message(message.chat.id, "📸 پیج اینستاگرام ما:\nhttps://www.instagram.com/maniiii.yt?igsh=ZWp6ZHdhMjloY2Jh")
-
-    elif message.text == "📊 اطلاعات و آمار ربات (ادمین)":
-        if numeric_user_id == ADMIN_ID:
-            total_users = len(data)
-            bot.send_message(message.chat.id, f"📊 آمار ربات:\n\n👥 کل کاربرانی که ربات را استارت کرده‌اند: {total_users} نفر")
-        else:
-            bot.send_message(message.chat.id, "❌ شما به این بخش دسترسی ندارید.")
-
-print("Bot is running perfectly...")
-bot.infinity_polling()
-
+if __name__ == '__main__':
+  bot.infinity_polling()

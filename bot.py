@@ -43,8 +43,9 @@ def main_menu(user_id):
     markup.add(
         KeyboardButton("🎁 اکانت روزانه 🎁"), 
         KeyboardButton("🎁 40 فول رایگان"),
+        KeyboardButton("💥اکانت 20 فول رایگان💥"),
         KeyboardButton("💥جایزه ویژه💥"),
-        KeyboardButton("🎁 پست 117🎁"),
+        KeyboardButton("🎁 اکانت خام 117🎁"),
         KeyboardButton("🎁 پست سایرن رایگان"),
         KeyboardButton("🎁 پست گوست متیک رایگان🎁"),
         KeyboardButton("🎁 اکانت ۸۰ میلیونی رایگان🎁"),
@@ -105,7 +106,6 @@ def handle(message):
     numeric_user_id = message.from_user.id
     
     data = load_data()
-    today = datetime.now().strftime("%Y-%m-%d")
 
     if user_id not in data:
         data[user_id] = {'invites': 0, 'last_daily': None}
@@ -130,30 +130,32 @@ def handle(message):
         )
 
     elif message.text == "🎁 اکانت روزانه 🎁":
-        if data[user_id].get('last_daily') == today:
-            bot.send_message(message.chat.id, "❌ شما امروز اکانت روزانه را دریافت کردید. فردا دوباره تلاش کنید.")
-        else:
-            msg = "🎁 این هم اکانت روزانه شما:\n\ntannazfarshchi@gmail.com\nbedhard3223"
-            bot.send_message(message.chat.id, msg)
-            data[user_id]['last_daily'] = today
-            save_data(data)
+        bot.send_message(message.chat.id, "❌ این بخش فعلاً غیرفعال و خاموش می‌باشد.")
 
     elif message.text == "🎁 40 فول رایگان":
-        if current_invites >= 100:
+        bot.send_message(
+            message.chat.id, 
+            "🎁 این اکانت به برنده اش تعلق گرفته برای دیدن تحویل اکانت هم این لینک رو بزار چک رضایت تحویل رو چک کنن:\n"
+            "https://t.me/cod_manii_yt/94\n\n"
+            "اگر میخوای برنده بعدی تو باشی بزن رو گزینه 💥اکانت 20 فول رایگان💥"
+        )
+
+    elif message.text == "💥اکانت 20 فول رایگان💥":
+        if current_invites >= 45:
             prize_msg = (
-                "💎 تبریک! شما ۱۰۰ نفر را دعوت کردید و اکانت ۴۰ فول رایگان به شما تعلق گرفت:\n\n"
-                "CuentadePobreperayaque12A@hotmail.com\n"
-                "Venta135"
+                "💎 تبریک! شما ۴۵ نفر را دعوت کردید و اکانت ۲۰ فول رایگان به شما تعلق گرفت:\n\n"
+                "Hajsuahsjs@gmail.com\n"
+                "Aiiw2828"
             )
             bot.send_message(message.chat.id, prize_msg)
         else:
-            remaining = 100 - current_invites
+            remaining = 45 - current_invites
             ref_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
             
             ref_msg = (
-                f"⚠️ عشقا به دلیل سیف و تک سیو بودن اکانت مجبورم ۱۰۰ نفر رفرال‌گیری بزارم. توجه کنین این اکانت فقط به یک نفر میرسه پس فرصت محدوده؛ فقط این اکانت به یک نفر تعلق می‌گیرد!\n\n"
+                f"⚠️ برای دریافت اکانت ۲۰ فول رایگان، باید ۴۵ نفر رفرال بگیرید.\n\n"
                 f"👥 تعداد دعوت‌های فعلی شما: {current_invites} نفر\n"
-                f"❌ تعداد باقی‌مانده برای دریافت اکانت ۴۰ فول رایگان: {remaining} نفر\n\n"
+                f"❌ تعداد باقی‌مانده: {remaining} نفر\n\n"
                 f"🔗 برای دریافت اکانت، لینک زیر را برای دوستان خود بفرستید:\n{ref_link}"
             )
             bot.send_message(message.chat.id, ref_msg)
@@ -168,8 +170,8 @@ def handle(message):
         )
         bot.send_message(message.chat.id, special_prize_msg)
 
-    elif message.text == "🎁 پست 117🎁":
-        post_117_msg = "🎁 اطلاعات اکانت پست 117 شما:\n\nlhznn2006@icloud.com \nLhznxl16"
+    elif message.text == "🎁 اکانت خام 117🎁":
+        post_117_msg = "🎁 اطلاعات اکانت خام 117 شما:\n\nparsa.parsa.92@gmail.com\nparsacallaf92"
         bot.send_message(message.chat.id, post_117_msg)
 
     elif message.text == "🎁 پست سایرن رایگان":
